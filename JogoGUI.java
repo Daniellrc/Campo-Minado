@@ -5,10 +5,12 @@ import java.awt.event.*;
 public class JogoGUI extends JFrame {
     private JButton[][] botoes;
     private Tabuleiro tabuleiro;
-    private int bombas, linhas, tempoLimite, colunas; //COMO NÃO USA??? USA SIM PÔ
+    private int linhas, colunas, bombas, tempoLimite;
     private Timer timer;
     private int tempoRestante;
+    private int bandeirasRestantes;
     private JLabel tempoLabel;
+    private JLabel bandeirasLabel;
 
     public JogoGUI(int linhas, int colunas, int bombas, int tempoLimite) {
         this.linhas = linhas;
@@ -16,6 +18,7 @@ public class JogoGUI extends JFrame {
         this.bombas = bombas;
         this.tempoLimite = tempoLimite;
         this.tempoRestante = tempoLimite;
+        this.bandeirasRestantes = bombas;
 
         setTitle("Campo Minado");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -35,11 +38,15 @@ public class JogoGUI extends JFrame {
                 botao.addMouseListener(new MouseAdapter() {
                     public void mouseClicked(MouseEvent e) {
                         if (SwingUtilities.isRightMouseButton(e)) {
-                            if (botao.getText().equals("")) {
+                            // Alterna bandeira 🚩
+                            if (botao.getText().equals("") && bandeirasRestantes > 0) {
                                 botao.setText("🚩");
+                                bandeirasRestantes--;
                             } else if (botao.getText().equals("🚩")) {
                                 botao.setText("");
+                                bandeirasRestantes++;
                             }
+                            atualizarBandeirasLabel();
                             return;
                         }
 
@@ -75,14 +82,23 @@ public class JogoGUI extends JFrame {
 
         add(painel, BorderLayout.CENTER);
 
-        // Tempo formatado desde o início
-        tempoLabel = new JLabel("Tempo restante: " + formatarTempo(tempoRestante));
-        tempoLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        add(tempoLabel, BorderLayout.SOUTH);
+        JPanel infoPanel = new JPanel(new GridLayout(1, 2));
 
-        timer = new Timer(1000, e -> { //"e" não é usado mesmo, ta tudo certo!
+        tempoLabel = new JLabel();
+        tempoLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        atualizarTempoLabel();
+        infoPanel.add(tempoLabel);
+
+        bandeirasLabel = new JLabel();
+        bandeirasLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        atualizarBandeirasLabel();
+        infoPanel.add(bandeirasLabel);
+
+        add(infoPanel, BorderLayout.SOUTH);
+
+        timer = new Timer(1000, e -> {
             tempoRestante--;
-            tempoLabel.setText("Tempo restante: " + formatarTempo(tempoRestante));
+            atualizarTempoLabel();
             if (tempoRestante <= 0) {
                 timer.stop();
                 revelarMinas();
@@ -97,11 +113,14 @@ public class JogoGUI extends JFrame {
         setVisible(true);
     }
 
-    // NOVO MÉTODO: Formata o tempo como mm:ss
-    private String formatarTempo(int segundos) {
-        int minutos = segundos / 60;
-        int segRestantes = segundos % 60;
-        return String.format("%02d:%02d", minutos, segRestantes);
+    private void atualizarTempoLabel() {
+        int minutos = tempoRestante / 60;
+        int segundos = tempoRestante % 60;
+        tempoLabel.setText(String.format("Tempo restante: %d:%02d", minutos, segundos));
+    }
+
+    private void atualizarBandeirasLabel() {
+        bandeirasLabel.setText(String.format("🚩: %d/%d", bandeirasRestantes, bombas));
     }
 
     private int contarBandeirasAoRedor(int linha, int coluna) {
@@ -172,11 +191,7 @@ public class JogoGUI extends JFrame {
     }
 
     public static void criarMenu() {
-        String[] opcoes = {
-                "Fácil (8x10, 10 bombas, 5min)",
-                "Médio (14x18, 30 bombas, 15min)",
-                "Difícil (20x24, 99 bombas, 60min)"
-        };
+        String[] opcoes = {"Fácil (8x10, 10 bombas, 5min)", "Médio (14x18, 30 bombas, 15min)", "Difícil (20x24, 99 bombas, 60min)"};
 
         String escolha = (String) JOptionPane.showInputDialog(
                 null,
@@ -188,7 +203,9 @@ public class JogoGUI extends JFrame {
                 opcoes[0]
         );
 
-        if (escolha == null) System.exit(0);
+        if (escolha == null) {
+            System.exit(0);
+        }
 
         switch (escolha) {
             case "Fácil (8x10, 10 bombas, 5min)":
