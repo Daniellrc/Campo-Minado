@@ -1,6 +1,6 @@
 # Campo-Minado - Java
 
-Jogo campo minado produzido no primeiro semestre do curso Análise e Desenvolvimento de Sistemas para a matéria do professor @rmayormartins, Pensamento Computacional e Algoritmos, utilizando java. 
+Jogo campo minado produzido no primeiro semestre do curso Análise e Desenvolvimento de Sistemas para a matéria do professor Ramon Mayor Martins, Pensamento Computacional e Algoritmos, utilizando java. 
 
 # Regras de Jogo
 
